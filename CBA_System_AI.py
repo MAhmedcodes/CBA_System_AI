@@ -27,11 +27,11 @@ videos_dir.mkdir(exist_ok=True)
 # Loading all YOLOv8n Models
 try:
     #Weapon Model Detects Guns and Knives
-    gun_model = YOLO('./Models/detect/Guns & Knives/weights/best.pt', weight_only=False)
+    gun_model = YOLO('./Models/detect/Guns & Knives/weights/best.pt')
     #Placard Model Detects Placards and Knives  
-    placard_model = YOLO('./Models/detect/Placard-stick/weights/best.pt', weight_only=False)  
+    placard_model = YOLO('./Models/detect/Placard-stick/weights/best.pt')  
     #Behaviour Model Detects if someone is Fighting or in Fighting Posture
-    behavior_model = YOLO('./Models/detect/Fights/weights/best.pt', weight_only=False) 
+    behavior_model = YOLO('./Models/detect/Fights/weights/best.pt') 
     st.success("All Three YOLOv8 Models Loaded Succesfully!")
 except Exception as e:
     st.error(f"Error loading YOLO models: {e}")
