@@ -6,7 +6,6 @@ firebase-admin==6.2.0
 requests==2.31.0
 python-dotenv==1.0.1
 protobuf==4.25.3
-# REMOVE or COMMENT OUT any lines like "--upgrade pip" or "-"
 certifi==2025.1.31
 charset-normalizer==3.4.1
 colorama==0.4.6
@@ -22,10 +21,8 @@ MarkupSafe==3.0.2
 matplotlib==3.8.2
 mpmath==1.3.0
 networkx==3.4.2
-numpy==1.24.3
 opencv-contrib-python==4.8.0.76
 opencv-python==4.8.0.76
-opencv-python-headless==4.8.0.74
 packaging==24.2
 pandas==2.1.4
 pillow==11.2.1
@@ -36,7 +33,6 @@ python-dateutil==2.9.0.post0
 pytz==2025.2
 PyWavelets==1.5.0
 PyYAML==6.0.2
-requests==2.32.3
 scipy==1.15.2
 seaborn==0.13.2
 six==1.17.0
@@ -48,5 +44,4 @@ torchvision==0.15.2
 tqdm==4.67.1
 typing_extensions==4.13.2
 tzdata==2025.2
-ultralytics==8.0.203
 urllib3==2.4.0
