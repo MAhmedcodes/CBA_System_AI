@@ -7,13 +7,6 @@ import os
 import getpass
 from pathlib import Path
 from datetime import datetime
-import torch
-from torch.nn.modules.container import Sequential
-from ultralytics.nn.tasks import DetectionModel
-
-# Allowlist the required classes
-torch.serialization.add_safe_globals([Sequential, DetectionModel])
-
 
 # Prepare directory structure
 user_name = getpass.getuser()
