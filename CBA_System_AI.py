@@ -8,9 +8,11 @@ import getpass
 from pathlib import Path
 from datetime import datetime
 import torch
+from torch.nn.modules.container import Sequential
 from ultralytics.nn.tasks import DetectionModel
 
-torch.serialization.add_safe_globals([DetectionModel])
+# Allowlist the required classes
+torch.serialization.add_safe_globals([Sequential, DetectionModel])
 
 
 # Prepare directory structure
