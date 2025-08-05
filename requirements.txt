@@ -9,4 +9,3 @@ protobuf==4.25.3
 torch==2.0.1  # Version with better compatibility
 torchvision==0.15.2
 Pillow==9.5.0  # More stable version
---upgrade pip
