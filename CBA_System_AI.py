@@ -22,7 +22,6 @@ videos_dir.mkdir(exist_ok=True)
 
 # Loading all YOLOv8n Models
 try:
-    with torch.serialization.safe_load_context():
         #Weapon Model Detects Guns and Knives
         gun_model = YOLO('./Models/detect/Guns & Knives/weights/best.pt')
         #Placard Model Detects Placards and Knives  
