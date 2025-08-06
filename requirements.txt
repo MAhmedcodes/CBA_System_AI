@@ -1,9 +1,7 @@
 streamlit==1.32.0
 opencv-python-headless==4.8.0.76
 numpy==1.24.3
-ultralytics==8.0.20
-requests==2.31.0
-protobuf==4.25.3
 torch==2.0.1
 torchvision==0.15.2
+ultralytics==8.0.104
 # REMOVE or COMMENT OUT any lines like "--upgrade pip" or "-"
