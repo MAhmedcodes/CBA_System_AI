@@ -8,9 +8,8 @@ import getpass
 from pathlib import Path
 from datetime import datetime
 
-# Prepare directory structure
-user_name = getpass.getuser()
-base_dir = Path(f"C:/Users/{user_name}/Downloads/results")
+# Prepare directory structure - using temp directory for Streamlit cloud
+base_dir = Path(tempfile.gettempdir()) / "results"
 images_dir = base_dir / "images"
 videos_dir = base_dir / "videos"
 
@@ -167,15 +166,21 @@ def detect_video(video_file):
         output_filename = f"detected_{timestamp}.mp4"
         output_path = videos_dir / output_filename
 
-        # Video codec H.264 used for better browser compatibility
-        fourcc = cv2.VideoWriter_fourcc(*'avc1')
+        # Use MP4V codec which is more widely supported
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         out = cv2.VideoWriter(str(output_path), fourcc, fps, (frame_width, frame_height))
         
         if not out.isOpened():
-            st.error("Error: Video writer not initialized")
-            cap.release()
-            os.unlink(tfile.name)
-            return None
+            st.error("Error: Video writer not initialized. Trying alternative approach...")
+            # Try alternative approach
+            output_path = str(output_path) + '.avi'
+            fourcc = cv2.VideoWriter_fourcc(*'XVID')
+            out = cv2.VideoWriter(output_path, fourcc, fps, (frame_width, frame_height))
+            if not out.isOpened():
+                st.error("Failed to initialize video writer with both methods")
+                cap.release()
+                os.unlink(tfile.name)
+                return None
         
         progress_bar = st.progress(0)
         status_text = st.empty()
@@ -220,7 +225,7 @@ def detect_video(video_file):
         
         # Verify output file
         if os.path.exists(output_path):
-            cap_test = cv2.VideoCapture(str(output_path))
+            cap_test = cv2.VideoCapture(output_path)
             if cap_test.isOpened():
                 st.write(f"Video validated: {cap_test.get(cv2.CAP_PROP_FRAME_COUNT)} frames")
                 cap_test.release()
@@ -235,20 +240,27 @@ def detect_video(video_file):
         status_text.text(f"Completed! Processed {frame_count}/{total_frames} frames")
         st.success(f"Video processing completed. Output saved: {output_path}")
         
-        return str(output_path.resolve())
+        return output_path
     except Exception as e:
         st.error(f"Error processing video: {e}")
         return None
 
 def detect_live_camera():
     try:
-        cap = cv2.VideoCapture(0)
+        # Try different camera indices since Streamlit Cloud doesn't have direct camera access
+        for camera_index in [0, 1, 2]:
+            cap = cv2.VideoCapture(camera_index)
+            if cap.isOpened():
+                break
+        
         if not cap.isOpened():
-            st.error("Error: Could not access camera")
+            st.error("Error: Could not access camera. Note: Camera access is not supported on Streamlit Sharing.")
             return
         
         stframe = st.empty()
-        while st.session_state.camera_active:
+        stop_button = st.button("Stop Camera")
+        
+        while cap.isOpened() and not stop_button:
             ret, frame = cap.read()
             if not ret:
                 st.warning("Could not capture frame from camera")
@@ -374,12 +386,12 @@ with tab2:
 
 with tab3:
     st.header("Live Camera Detection")
-    start_camera = st.button("Start Live Detection")
-    stop_camera = st.button("Stop Live Detection")
-
-    if start_camera:
+    st.warning("Note: Camera access is not supported on Streamlit Sharing. This feature works only when running locally.")
+    
+    if st.button("Start Live Detection"):
         st.session_state.camera_active = True
         detect_live_camera()
-    if stop_camera:
+    
+    if st.button("Stop Live Detection"):
         st.session_state.camera_active = False
         st.empty()
