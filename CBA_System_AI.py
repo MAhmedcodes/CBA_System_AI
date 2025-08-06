@@ -7,6 +7,7 @@ import os
 import getpass
 from pathlib import Path
 from datetime import datetime
+import torch
 
 # Prepare directory structure
 user_name = getpass.getuser()
