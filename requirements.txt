@@ -1,9 +1,11 @@
 streamlit==1.32.0
 opencv-python-headless==4.9.0.80
 numpy==1.26.4
-ultralytics==8.1.27
+ultralytics==8.0.20
 firebase-admin==6.2.0
 requests==2.31.0
 python-dotenv==1.0.1
 protobuf==4.25.3
+torch==2.0.1
+torchvision==0.15.2
 # REMOVE or COMMENT OUT any lines like "--upgrade pip" or "-"
