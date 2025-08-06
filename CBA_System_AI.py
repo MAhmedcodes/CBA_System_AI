@@ -46,7 +46,7 @@ def draw_combined_results(frame, gun_results, placard_results, behavior_results)
     
     # Define confidence thresholds for each model
     GUN_CONF_THRESHOLD = st.session_state.get('conf_threshold_gun', 0.5)  
-    PLACARD_CONF_THRESHOLD = st.session_state.get('conf_threshold_placard', 0.25)  
+    PLACARD_CONF_THRESHOLD = st.session_state.get('conf_threshold_placard', 0.55)  
     BEHAVIOR_CONF_THRESHOLD = st.session_state.get('conf_threshold_behavior', 0.6)  
     
     # Drawing Results of Fun model
@@ -247,57 +247,70 @@ def detect_video(video_file):
 
 def detect_live_camera():
     try:
-        # Initialize camera
-        cap = cv2.VideoCapture(0)  # Try default camera
+        # Check if running in browser (like Streamlit Sharing)
+        is_browser = "streamlit" in st.__file__.lower()
         
-        if not cap.isOpened():
-            # Try different camera indices
-            for camera_index in [1, 2, 3]:
-                cap = cv2.VideoCapture(camera_index)
-                if cap.isOpened():
-                    break
+        if is_browser:
+            # For browser-based environments (like Streamlit Sharing)
+            st.warning("Live camera access is limited in browser environments.")
+            st.info("To use live camera detection, please run this app locally.")
+            return
         
-        if not cap.isOpened():
-            st.error("Error: Could not access any camera. Please ensure a camera is connected.")
+        # For local execution
+        st.info("Attempting to access camera... You may need to grant permissions.")
+        
+        # Try to access camera with proper error handling
+        cap = None
+        for camera_index in [0, 1, 2]:  # Try common camera indices
+            cap = cv2.VideoCapture(camera_index)
+            if cap.isOpened():
+                st.success(f"Connected to camera index {camera_index}")
+                break
+            cap.release()
+        
+        if not cap or not cap.isOpened():
+            st.error("""
+            Could not access any camera. Please:
+            1. Ensure a camera is connected
+            2. Grant camera permissions if prompted
+            3. Try refreshing the page
+            """)
             return
         
         stframe = st.empty()
-        stop_button_pressed = st.button("Stop Camera")
+        stop_button = st.button("Stop Camera")
         
-        while cap.isOpened() and not stop_button_pressed:
+        while cap.isOpened() and not stop_button:
             ret, frame = cap.read()
             if not ret:
-                st.warning("Could not capture frame from camera")
+                st.warning("Couldn't read frame from camera")
                 break
             
             try:
-                # Run all three models on live frame
+                # Run detection models
                 gun_results = gun_model(frame, verbose=False)
                 placard_results = placard_model(frame, verbose=False)
                 behavior_results = behavior_model(frame, verbose=False)
                 
-                # Combine results from all three
+                # Draw results
                 annotated_frame = draw_combined_results(frame, gun_results, placard_results, behavior_results)
-                
-                # Convert to RGB for Streamlit display
                 annotated_frame_rgb = cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB)
+                
+                # Display frame
                 stframe.image(annotated_frame_rgb, channels="RGB", use_container_width=True)
                 
-                # Add a small delay to allow the stop button to be pressed
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
-                    
             except Exception as e:
-                st.error(f"Error processing live frame: {e}")
+                st.error(f"Error processing frame: {e}")
                 break
         
-        cap.release()
-        cv2.destroyAllWindows()
+        # Cleanup
+        if cap.isOpened():
+            cap.release()
         stframe.empty()
-        st.success("Camera feed stopped successfully.")
+        st.success("Camera feed stopped")
         
     except Exception as e:
-        st.error(f"Error in live detection: {e}")
+        st.error(f"Camera error: {str(e)}")
 
 # Streamlit app
 st.title("Crowd Behaviour Analysis System")
@@ -399,9 +412,8 @@ with tab3:
     st.header("Live Camera Detection")
     
     if st.button("Start Live Detection"):
-        st.session_state.camera_active = True
         detect_live_camera()
     
     if st.button("Stop Live Detection"):
         st.session_state.camera_active = False
-        st.empty()
+        st.rerun()  # Refresh to clear the camera feed
