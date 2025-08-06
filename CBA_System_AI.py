@@ -247,20 +247,24 @@ def detect_video(video_file):
 
 def detect_live_camera():
     try:
-        # Try different camera indices since Streamlit Cloud doesn't have direct camera access
-        for camera_index in [0, 1, 2]:
-            cap = cv2.VideoCapture(camera_index)
-            if cap.isOpened():
-                break
+        # Initialize camera
+        cap = cv2.VideoCapture(0)  # Try default camera
         
         if not cap.isOpened():
-            st.error("Error: Could not access camera. Note: Camera access is not supported on Streamlit Sharing.")
+            # Try different camera indices
+            for camera_index in [1, 2, 3]:
+                cap = cv2.VideoCapture(camera_index)
+                if cap.isOpened():
+                    break
+        
+        if not cap.isOpened():
+            st.error("Error: Could not access any camera. Please ensure a camera is connected.")
             return
         
         stframe = st.empty()
-        stop_button = st.button("Stop Camera")
+        stop_button_pressed = st.button("Stop Camera")
         
-        while cap.isOpened() and not stop_button:
+        while cap.isOpened() and not stop_button_pressed:
             ret, frame = cap.read()
             if not ret:
                 st.warning("Could not capture frame from camera")
@@ -276,15 +280,22 @@ def detect_live_camera():
                 annotated_frame = draw_combined_results(frame, gun_results, placard_results, behavior_results)
                 
                 # Convert to RGB for Streamlit display
-                annotated_frame = cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB)
-                stframe.image(annotated_frame, channels="RGB", use_container_width=True)
+                annotated_frame_rgb = cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB)
+                stframe.image(annotated_frame_rgb, channels="RGB", use_container_width=True)
                 
+                # Add a small delay to allow the stop button to be pressed
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+                    
             except Exception as e:
                 st.error(f"Error processing live frame: {e}")
                 break
         
         cap.release()
+        cv2.destroyAllWindows()
         stframe.empty()
+        st.success("Camera feed stopped successfully.")
+        
     except Exception as e:
         st.error(f"Error in live detection: {e}")
 
@@ -386,7 +397,6 @@ with tab2:
 
 with tab3:
     st.header("Live Camera Detection")
-    st.warning("Note: Camera access is not supported on Streamlit Sharing. This feature works only when running locally.")
     
     if st.button("Start Live Detection"):
         st.session_state.camera_active = True
