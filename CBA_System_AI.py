@@ -2,6 +2,7 @@ import streamlit as st
 import cv2
 import numpy as np
 from ultralytics import YOLO
+from ultralytics.nn.tasks import DetectionModel
 import tempfile
 import os
 import getpass
@@ -21,14 +22,22 @@ images_dir.mkdir(exist_ok=True)
 videos_dir.mkdir(exist_ok=True)
 
 # Loading all YOLOv8n Models
+# Loading all YOLOv8n Models
 try:
-    #Weapon Model Detects Guns and Knives
-    gun_model = YOLO('./Models/detect/Guns & Knives/weights/best.pt')
-    #Placard Model Detects Placards and Knives  
-    placard_model = YOLO('./Models/detect/Placard-stick/weights/best.pt')  
-    #Behaviour Model Detects if someone is Fighting or in Fighting Posture
-    behavior_model = YOLO('./Models/detect/Fights/weights/best.pt') 
-    st.success("All Three YOLOv8 Models Loaded Succesfully!")
+    with torch.serialization.safe_load_context():
+        torch.serialization.add_safe_class(DetectionModel)
+
+        # Weapon Model - Detects Guns and Knives
+        gun_model = YOLO('./Models/detect/Guns & Knives/weights/best.pt')
+        
+        # Placard Model - Detects Placards and Sticks  
+        placard_model = YOLO('./Models/detect/Placard-stick/weights/best.pt')  
+        
+        # Behaviour Model - Detects Fighting or Postures
+        behavior_model = YOLO('./Models/detect/Fights/weights/best.pt') 
+
+    st.success("All Three YOLOv8 Models Loaded Successfully!")
+
 except Exception as e:
     st.error(f"Error loading YOLO models: {e}")
     st.stop()
